@@ -1,18 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// import { SignedIn, SignedOut } from '@clerk/clerk-react'; // Uncomment this later
-import { useUser } from '../context/UserContext';
-
-// --- TEMPORARY CLERK MOCKS (Delete these when you install Clerk) ---
-const SignedIn = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useUser();
-  return user ? <>{children}</> : null;
-};
-
-const SignedOut = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useUser();
-  return !user ? <>{children}</> : null;
-};
+import { 
+  SignedIn, 
+  SignedOut, 
+} from '@clerk/clerk-react'; 
 
 export function Home() {
   return (
@@ -21,7 +12,6 @@ export function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             
-            {/* Note: Ensure this image exists in your public/ folder or use a placeholder */}
             <img
               src="/clientpic.jpg" 
               alt="Client Pic"
@@ -37,7 +27,7 @@ export function Home() {
               
               <SignedOut>
                 <Link
-                  to="/sign-in" // Pointing to our new Login page
+                  to="/sign-in" 
                   className="px-8 py-3 bg-[#469CA4] text-white rounded-md hover:bg-[#3a7d84] hover:text-white transition font-semibold"
                 >
                   Get Started
@@ -70,27 +60,23 @@ export function Home() {
         </div>
       </section>
 
-      {/* --- DIRECT ACCESS CARDS SECTION --- */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-[#30506C] text-center mb-12">Explore Our Hub</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             
-            {/* Card 1: Parenting Support -> Resources */}
             <Link 
               to="/resources"
               className="group bg-white rounded-lg shadow-md p-6 flex flex-col items-center justify-center text-center h-48 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#469CA4]"
             >
               <div className="mb-4 text-[#469CA4] group-hover:scale-110 transition-transform">
-                {/* You can replace this emoji with an icon later */}
                 <span className="text-4xl">👨‍👩‍👧‍👦</span>
               </div>
               <h3 className="text-2xl font-semibold text-[#30506C] mb-2 group-hover:text-[#469CA4] transition-colors">Parenting Support</h3>
               <p className="text-gray-600">Guides, articles, and toolkits for parents and guardians.</p>
             </Link>
 
-            {/* Card 2: Events -> Events */}
             <Link 
               to="/events"
               className="group bg-white rounded-lg shadow-md p-6 flex flex-col items-center justify-center text-center h-48 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#469CA4]"
@@ -102,7 +88,6 @@ export function Home() {
               <p className="text-gray-600">Join workshops, meetups, and local support gatherings.</p>
             </Link>
 
-            {/* Card 3: Expert Talks -> Courses */}
             <Link 
               to="/courses"
               className="group bg-white rounded-lg shadow-md p-6 flex flex-col items-center justify-center text-center h-48 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border border-transparent hover:border-[#469CA4]"

@@ -37,6 +37,7 @@ export interface IHabit {
   updatedAt: Date;
 }
 
+// --- USER INTERFACE (Crucial for Clerk Integration) ---
 export interface IUser {
   _id?: string;
   clerkId: string;
@@ -46,10 +47,8 @@ export interface IUser {
   userType: 'user' | 'admin';
   emotionalCheckins: IEmotionalCheckin[];
   plannerEntries: IPlannerEntry[];
-  // --- ADDED THESE TWO LINES ---
   brainDumpEntries: IBrainDumpEntry[];
   focusSessions: IFocusSession[]; 
-  // -----------------------------
   enrolledCourses: string[];
   favoriteResources: string[];
   registeredEvents: string[];
@@ -84,7 +83,7 @@ export interface IEvent {
   eventDate: Date;
   eventLocation: string;
   eventDescription: string;
-   attendees: string[];
+  attendees: string[];
   createdAt: Date;
   updatedAt: Date;
 }

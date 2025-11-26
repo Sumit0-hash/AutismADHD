@@ -1,10 +1,11 @@
 import React from 'react';
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { IUser, ICourse, IEvent, IResource } from '../types/index.js';
+import { createContext, useContext, useState, ReactNode } from 'react';
+// Note: This file has been refactored to remove all user authentication state (user, setUser)
+// and now handles only application data (courses, events, resources).
+import { ICourse, IEvent, IResource } from '../types/index.js'; // Removed IUser import
 
-interface UserContextType {
-  user: IUser | null;
-  setUser: (user: IUser | null) => void;
+// Interface now only tracks application data and loading state
+interface DataContextType {
   courses: ICourse[];
   setCourses: (courses: ICourse[]) => void;
   events: IEvent[];
@@ -15,20 +16,20 @@ interface UserContextType {
   setLoading: (loading: boolean) => void;
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
+// Renamed context internally to DataContext
+const DataContext = createContext<DataContextType | undefined>(undefined);
 
-export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<IUser | null>(null);
+// Renamed provider internally to DataProvider
+export const DataProvider = ({ children }: { children: ReactNode }) => {
+  // Removed user and setUser state
   const [courses, setCourses] = useState<ICourse[]>([]);
   const [events, setEvents] = useState<IEvent[]>([]);
   const [resources, setResources] = useState<IResource[]>([]);
   const [loading, setLoading] = useState(false);
 
   return (
-    <UserContext.Provider
+    <DataContext.Provider
       value={{
-        user,
-        setUser,
         courses,
         setCourses,
         events,
@@ -40,14 +41,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }}
     >
       {children}
-    </UserContext.Provider>
+    </DataContext.Provider>
   );
 };
 
-export const useUser = () => {
-  const context = useContext(UserContext);
+// Renamed hook to useData
+export const useData = () => {
+  const context = useContext(DataContext);
   if (context === undefined) {
-    throw new Error('useUser must be used within UserProvider');
+    // Updated error message to reflect the new name
+    throw new Error('useData must be used within DataProvider');
   }
   return context;
 };

@@ -1,16 +1,18 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { useUser } from '../context/UserContext.js';
+// FIX: Changed import from the non-existent 'useUser' to the refactored 'useData' hook.
+import { useData } from '../context/UserContext.js'; // Note: This file should be renamed to DataContext.js
 import { ExternalLink, FileText, BookOpen } from 'lucide-react';
 import type { IResource } from '../types/index.js';
 
 export const Resources = () => {
-  const { resources, setResources } = useUser();
+  // CORRECTED: Destructuring resources and setResources from useData()
+  const { resources, setResources } = useData(); 
   // Restricted filter state to relevant categories
   const [filter, setFilter] = useState<'all' | 'article' | 'guide'>('all');
 
   useEffect(() => {
-    // Updated mock data to only include Articles and Guides (Books)
+    // NOTE: This mock course data fetch will be replaced by your MongoDB API call in Week 6
     const mockResources: IResource[] = [
       {
         _id: 'resource_1',

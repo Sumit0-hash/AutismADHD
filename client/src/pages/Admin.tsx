@@ -1,11 +1,30 @@
 import React from 'react';
-import { useUser } from '../context/UserContext.js';
+// FIX 1: Import Clerk's useUser for authenticated user identity and metadata
+import { useUser } from '@clerk/clerk-react'; 
+// FIX 2: Import the new application data hook (useData)
+import { useData } from '../context/UserContext.js'; // Assuming this file now exports useData
 import { BarChart3, Users, BookOpen, Calendar, Settings } from 'lucide-react';
 
 export const Admin = () => {
-  const { user, courses, events, resources } = useUser();
+  // 1. Authentication Data (from Clerk)
+  const { user, isLoaded: isUserLoaded } = useUser();
+  
+  // 2. Application Data (from our refactored Data Context)
+  const { courses, events, resources, loading: isDataLoading } = useData();
+  
+  // Combine loading states
+  if (!isUserLoaded || isDataLoading) {
+    return (
+      <div className="min-h-screen bg-[#EFE3DF] flex items-center justify-center">
+        <p className="text-[#30506C]">Loading Admin authentication...</p>
+      </div>
+    );
+  }
 
-  if (user?.userType !== 'admin') {
+  // --- ACCESS DENIAL CHECK ---
+  // Safely check the user type from Clerk's public metadata
+  const userType = user?.publicMetadata?.userType;
+  if (userType !== 'admin') {
     return (
       <div className="min-h-screen bg-[#EFE3DF] flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-md p-8 text-center max-w-md">

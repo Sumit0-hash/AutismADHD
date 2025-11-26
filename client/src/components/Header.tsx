@@ -1,21 +1,31 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, User } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import { 
+  SignedIn, 
+  SignedOut, 
+  UserButton, 
+  SignInButton, 
+  useUser 
+} from '@clerk/clerk-react';
 
+// Removed obsolete props: userEmail and onLogout
 interface HeaderProps {
-  userEmail?: string;
-  onLogout?: () => void;
-  isAdmin?: boolean;
+  isAdmin: boolean;
 }
 
-export const Header = ({ userEmail, onLogout, isAdmin }: HeaderProps) => {
+export const Header = ({ isAdmin }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  
+  // Use Clerk's useUser hook to access current user data if needed
+  const { user } = useUser();
+  const userEmail = user?.primaryEmailAddress?.emailAddress || '';
 
   // Combined list of navigation links
   const navLinks = [
     { to: '/', name: 'Home' },
-    {to:'/dashboard', name: 'Dashboard' },
+    { to: '/dashboard', name: 'Dashboard' },
     { to: '/courses', name: 'Courses' },
     // { to: '/productivity', name: 'Productivity' },
     { to: '/resources', name: 'Resources' },
@@ -65,22 +75,28 @@ export const Header = ({ userEmail, onLogout, isAdmin }: HeaderProps) => {
 
           {/* --- User Actions (Desktop) --- */}
           <div className="hidden md:flex items-center space-x-4 flex-shrink-0">
-            {userEmail && (
-              <div className="flex items-center space-x-2 text-sm text-gray-300 bg-[#263A47] py-1 px-3 rounded-full">
-                <User size={14} />
-                <span className="max-w-[150px] truncate">{userEmail}</span>
-              </div>
-            )}
-            {onLogout && (
-              <button
-                onClick={onLogout}
-                className="flex items-center space-x-2 bg-[#469CA4] hover:bg-[#3a7f8a] px-3 py-2 rounded-lg transition shadow-sm"
-                title="Logout"
-              >
-                <LogOut size={18} />
-                <span className="hidden lg:inline">Logout</span>
-              </button>
-            )}
+            
+            <SignedOut>
+              {/* Show SIGN IN button */}
+              <SignInButton mode="modal">
+                <button
+                  className="bg-[#469CA4] hover:bg-[#3a7f8a] px-3 py-2 rounded-lg transition shadow-sm text-sm font-medium"
+                >
+                  Sign In
+                </button>
+              </SignInButton>
+            </SignedOut>
+
+            <SignedIn>
+              {/* Show User Email ID and Profile Button */}
+              {userEmail && (
+                <div className="flex items-center space-x-2 text-sm text-gray-300 bg-[#263A47] py-1 px-3 rounded-full">
+                  <span className="max-w-[150px] truncate">{userEmail}</span>
+                </div>
+              )}
+              {/* This component includes the logout functionality */}
+              <UserButton afterSignOutUrl="/" /> 
+            </SignedIn>
           </div>
 
           {/* --- Mobile Menu Button --- */}
@@ -117,27 +133,30 @@ export const Header = ({ userEmail, onLogout, isAdmin }: HeaderProps) => {
             {/* Divider */}
             <div className="border-t border-gray-600 my-4"></div>
 
-            {/* Mobile User Info & Logout */}
+            {/* Mobile User Info & Logout/Login */}
             <div className="px-3 space-y-4">
-              {userEmail && (
-                <div className="flex items-center space-x-2 text-gray-300">
-                  <User size={18} />
-                  <span className="text-sm truncate">{userEmail}</span>
-                </div>
-              )}
-
-              {onLogout && (
-                <button
-                  onClick={() => {
-                    onLogout();
-                    closeMobileMenu();
-                  }}
-                  className="w-full flex items-center justify-center space-x-2 bg-[#469CA4] hover:bg-[#3a7f8a] px-4 py-3 rounded-lg transition text-white font-semibold"
-                >
-                  <LogOut size={20} />
-                  <span>Logout</span>
-                </button>
-              )}
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button
+                    onClick={closeMobileMenu}
+                    className="w-full flex items-center justify-center bg-[#469CA4] hover:bg-[#3a7f8a] px-4 py-3 rounded-lg transition text-white font-semibold"
+                  >
+                    Sign In / Sign Up
+                  </button>
+                </SignInButton>
+              </SignedOut>
+              
+              <SignedIn>
+                 {userEmail && (
+                    <div className="flex items-center space-x-2 text-gray-300">
+                      <span className="text-sm truncate">Signed in as: {userEmail}</span>
+                    </div>
+                  )}
+                  {/* The UserButton handles the mobile logout */}
+                  <div className="flex justify-center">
+                    <UserButton afterSignOutUrl="/" />
+                  </div>
+              </SignedIn>
             </div>
           </div>
         </div>

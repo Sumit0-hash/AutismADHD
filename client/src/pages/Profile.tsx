@@ -1,14 +1,58 @@
 import React from 'react';
-import { useUser } from '../context/UserContext.js';
-import { User, Mail, BookOpen, Calendar, Heart } from 'lucide-react';
+// FIX 1: Import the new data hook (useData) for application state
+import { useData } from '../context/UserContext.js'; // Assuming this file now exports useData
+// FIX 2: Import the Clerk hook for authentication
+import { useUser } from '@clerk/clerk-react';
+import { Mail, User, BookOpen, Calendar, Heart, Lock, Settings } from 'lucide-react';
+// NEW: Import necessary interfaces to structure the custom data
+import type { IPlannerEntry, IEmotionalCheckin } from '../types/index.js';
+
+// Define a type for the custom data structure stored in Clerk's publicMetadata
+interface CustomUserData {
+    emotionalCheckins: IEmotionalCheckin[];
+    plannerEntries: IPlannerEntry[];
+    enrolledCourses: string[];
+    registeredEvents: string[];
+    favoriteResources: string[];
+    userType: 'user' | 'admin';
+}
+
 
 export const Profile = () => {
-  const { user, courses, events, resources } = useUser();
+  // 1. Authentication Data (from Clerk)
+  const { user, isLoaded: isUserLoaded } = useUser();
+  
+  // 2. Application Data (from our refactored Data Context)
+  const { courses, events, resources, loading: isDataLoading } = useData();
 
-  const enrolledCourseDetails = courses.filter(c => user?.enrolledCourses.includes(c._id!));
-  const registeredEventDetails = events.filter(e => user?.registeredEvents.includes(e._id!));
-  const favoriteResourceDetails = resources.filter(r => user?.favoriteResources.includes(r._id!));
+  // --- LOADING CHECK ---
+  if (!isUserLoaded || isDataLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-[#30506C]">Loading full profile data...</p>
+      </div>
+    );
+  }
 
+  // Safely extract the custom data arrays from Clerk's publicMetadata
+  const customData = user?.publicMetadata as CustomUserData;
+
+  // Safely define arrays from Clerk metadata, defaulting to empty arrays
+  const enrolledCoursesIds = (customData?.enrolledCourses || []) as string[];
+  const registeredEventsIds = (customData?.registeredEvents || []) as string[];
+  const favoriteResourcesIds = (customData?.favoriteResources || []) as string[];
+
+  // Safely define nested arrays from Clerk metadata, defaulting to empty arrays
+  const emotionalCheckins = (customData?.emotionalCheckins || []) as IEmotionalCheckin[];
+  const plannerEntries = (customData?.plannerEntries || []) as IPlannerEntry[];
+
+  // 3. Combine Data Sources
+  const enrolledCourseDetails = courses.filter(c => enrolledCoursesIds.includes(c._id!));
+  const registeredEventDetails = events.filter(e => registeredEventsIds.includes(e._id!));
+  const favoriteResourceDetails = resources.filter(r => favoriteResourcesIds.includes(r._id!));
+
+  const primaryEmail = user?.emailAddresses[0]?.emailAddress || 'N/A';
+  
   return (
     <div className="min-h-screen bg-[#D7E9ED]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -18,17 +62,22 @@ export const Profile = () => {
           <div className="px-6 py-8">
             <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6 mb-8">
               <div className="w-20 h-20 -mt-16 bg-[#469CA4] rounded-full flex items-center justify-center text-white">
-                <User size={40} />
+                {/* Display actual user image if available */}
+                 <img 
+                    src={user?.imageUrl || 'https://placehold.co/80x80/469CA4/FFFFFF?text=P'} 
+                    alt={user?.firstName || "Profile"} 
+                    className="w-full h-full rounded-full object-cover"
+                />
               </div>
               <div className="flex-1">
                 <h1 className="text-3xl font-bold text-[#30506C]">
-                  {user?.userFirstName} {user?.userLastName}
+                  {user?.fullName}
                 </h1>
                 <p className="text-[#263A47] flex items-center space-x-2 mt-1">
                   <Mail size={18} />
-                  <span>{user?.userEmail}</span>
+                  <span>{primaryEmail}</span>
                 </p>
-                {user?.userType === 'admin' && (
+                {customData?.userType === 'admin' && (
                   <div className="mt-2 inline-block bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
                     Administrator
                   </div>
@@ -41,7 +90,7 @@ export const Profile = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[#263A47] text-sm">Total Check-ins</p>
-                    <p className="text-2xl font-bold text-[#30506C]">{user?.emotionalCheckins.length || 0}</p>
+                    <p className="text-2xl font-bold text-[#30506C]">{emotionalCheckins.length}</p>
                   </div>
                   <div className="text-[#469CA4] opacity-20">
                     <User size={32} />
@@ -54,7 +103,7 @@ export const Profile = () => {
                   <div>
                     <p className="text-[#263A47] text-sm">Enrolled Courses</p>
                     <p className="text-2xl font-bold text-[#30506C]">
-                      {user?.enrolledCourses.length || 0}
+                      {enrolledCoursesIds.length}
                     </p>
                   </div>
                   <div className="text-[#469CA4] opacity-20">
@@ -68,7 +117,7 @@ export const Profile = () => {
                   <div>
                     <p className="text-[#263A47] text-sm">Pending Tasks</p>
                     <p className="text-2xl font-bold text-[#30506C]">
-                      {user?.plannerEntries.filter(p => p.pEntryStatus === 'pending').length || 0}
+                      {plannerEntries.filter(p => p.pEntryStatus === 'pending').length}
                     </p>
                   </div>
                   <div className="text-[#469CA4] opacity-20">
@@ -79,6 +128,33 @@ export const Profile = () => {
             </div>
 
             <div className="border-t border-[#EFE3DF] pt-8 space-y-8">
+              
+              {/* Account Settings Link (Reusing structure from original Profile.tsx) */}
+                <h2 className="text-xl font-bold text-[#30506C] mb-4">Account Settings</h2>
+                <div className="space-y-3">
+                    <a 
+                        href={user?.id ? `/user/${user.id}/settings` : '#'} 
+                        className="flex items-center justify-between p-3 bg-[#F5F0ED] rounded-lg hover:bg-[#D7E9ED] transition"
+                    >
+                        <div className="flex items-center space-x-3">
+                            <Settings size={20} className="text-[#469CA4]" />
+                            <span className="font-medium text-[#30506C]">Edit Profile Settings</span>
+                        </div>
+                        <Lock size={16} className="text-[#263A47]" />
+                    </a>
+                    <a 
+                        href={user?.id ? `/user/${user.id}/security` : '#'} 
+                        className="flex items-center justify-between p-3 bg-[#F5F0ED] rounded-lg hover:bg-[#D7E9ED] transition"
+                    >
+                        <div className="flex items-center space-x-3">
+                            <Lock size={20} className="text-[#469CA4]" />
+                            <span className="font-medium text-[#30506C]">Security and Authentication</span>
+                        </div>
+                        <Lock size={16} className="text-[#263A47]" />
+                    </a>
+                </div>
+
+
               <div>
                 <h2 className="text-xl font-bold text-[#30506C] mb-4 flex items-center space-x-2">
                   <BookOpen size={24} />
