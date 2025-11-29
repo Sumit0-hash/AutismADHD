@@ -122,6 +122,8 @@ export function Navigation() {
                                     className="block text-center w-full px-4 py-2 rounded-lg bg-[#469CA4] hover:bg-[#3a7d84] transition text-sm font-semibold"
                                     onClick={closeMobileMenu}
                                 >
+
+                                    
                                     Sign Up
                                 </Link>
                             {/* </SignedOut> */}
@@ -130,5 +132,7 @@ export function Navigation() {
                 </div>
             )}
         </header>
+
+        
     );
 }
